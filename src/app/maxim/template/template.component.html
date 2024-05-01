@@ -69,16 +69,31 @@
 
                 <div>
                   @if ($index !== getSections().length - 1) {
-                    <button mat-icon-button (click)="moveSection($event, section, 'up')">
+                    <button
+                      mat-icon-button
+                      matTooltip="Move down"
+                      (click)="moveSection($event, section, 'down')">
                       <mat-icon>expand_more</mat-icon>
                     </button>
                   }
                   @if ($index !== 0) {
-                    <button mat-icon-button (click)="moveSection($event, section, 'down')">
+                    <button
+                      mat-icon-button
+                      matTooltip="Move up"
+                      (click)="moveSection($event, section, 'up')">
                       <mat-icon>expand_less</mat-icon>
                     </button>
                   }
-                  <button mat-icon-button (click)="editSection($event, section)">
+                  <button
+                    mat-icon-button
+                    matTooltip="Clone section"
+                    (click)="cloneSection($event, section)">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    matTooltip="Edit section"
+                    (click)="editSection($event, section)">
                     <mat-icon>edit</mat-icon>
                   </button>
                 </div>

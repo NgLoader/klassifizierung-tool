@@ -161,10 +161,23 @@ export default class TemplateComponent implements OnInit {
 
   moveSection(event: Event, section: TemplateSection, direction: 'up' | 'down') {
     event.stopPropagation();
-    const sections = this.template?.sections;
-    const index = sections?.indexOf(section);
-    if (typeof(index) === 'number' && index !== -1) {
-      this.moveArray(sections as object[], index, (direction === 'up' ? (index + 1) : (index - 1)));
+    if (this.template) {
+      const sections = this.template?.sections;
+      const index = sections?.indexOf(section);
+      if (typeof(index) === 'number' && index !== -1) {
+        this.moveArray(sections as object[], index, (direction === 'up' ? (index - 1) : (index + 1)));
+      }
+
+      this.service.updateTemplate(this.template!);
+    }
+  }
+
+  cloneSection(event: Event, section: TemplateSection) {
+    event.stopPropagation();
+    if (this.template) {
+      this.template.sections.push(Object.assign({}, section));
+      
+      this.service.updateTemplate(this.template!);
     }
   }
 
