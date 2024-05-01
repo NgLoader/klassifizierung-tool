@@ -1,16 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatInputModule } from '@angular/material/input';
 import { SectionArgument, Template, TemplateSection } from '../../../../services/template.service';
 import { CreateArgumentComponent } from '../create-argument/create-argument.component';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
-  selector: 'maxim-argument-string',
+  selector: 'maxim-argument-select',
   standalone: true,
   imports: [
     CommonModule,
@@ -18,12 +19,13 @@ import { CreateArgumentComponent } from '../create-argument/create-argument.comp
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatSelectModule
   ],
-  templateUrl: './argument-string.component.html',
-  styleUrl: './argument-string.component.scss'
+  templateUrl: './argument-select.component.html',
+  styleUrl: './argument-select.component.scss'
 })
-export class ArgumentStringComponent {
+export class ArgumentSelectComponent implements OnInit {
 
   private readonly dialog = inject(MatDialog);
 
@@ -33,12 +35,18 @@ export class ArgumentStringComponent {
 
   @Output() valueChanged: EventEmitter<string> = new EventEmitter();
 
-  @ViewChild('input', { static: true }) inputElement?: ElementRef<MatInput>;
+  keywords: string[] = [];
+  selected: string = '';
+
+  ngOnInit(): void {
+    const options: { keywords: string[]; default: string } = JSON.parse(this.argument.option);
+    this.keywords = [...options.keywords];
+    this.selected = options.default;
+    this.changeArgument();
+  }
 
   changeArgument() {
-    if (this.inputElement) {
-      this.valueChanged.emit(this.inputElement.nativeElement.value);
-    }
+    this.valueChanged.emit(this.selected);
   }
 
   updateArgument(event: Event) {

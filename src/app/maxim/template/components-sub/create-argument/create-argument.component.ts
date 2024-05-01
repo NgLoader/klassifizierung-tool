@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInput, MatInputModule } from '@angular/material/input';
@@ -9,6 +10,7 @@ import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DeleteTemplateComponent } from '../../../../dialog/delete-template/delete-template.component';
 import { SectionArgument, Template, TemplateSection, TemplateService } from '../../../../services/template.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'maxim-create-argument',
@@ -20,7 +22,10 @@ import { SectionArgument, Template, TemplateSection, TemplateService } from '../
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    MatChipsModule,
+    ReactiveFormsModule,
+    MatIconModule
   ],
   templateUrl: './create-argument.component.html',
   styleUrl: './create-argument.component.scss'
@@ -38,26 +43,55 @@ export class CreateArgumentComponent implements OnInit {
   private templateSection?: TemplateSection;
   private templateArgument?: SectionArgument;
 
-  @ViewChild('type', { static: true }) inputType?: MatSelect;
-  @ViewChild('key', { static: true }) inputKey?: ElementRef<MatInput>;
   @ViewChild('name', { static: true }) inputName?: ElementRef<MatInput>;
-  @ViewChild('value', { static: true }) inputValue?: ElementRef<MatInput>;
+  @ViewChild('key', { static: true }) inputKey?: ElementRef<MatInput>;
+  @ViewChild('type', { static: true }) inputType?: MatSelect;
+
+  stringDefaultValue: string = '';
+
+  selectFormControl = new FormControl([]);
+  selectKeywords: string[] = [];
+  selectDefaultValue: string = '';
 
   ngOnInit(): void {
     this.template = this.dialogData?.template ?? undefined;
     this.templateSection = this.dialogData?.section ?? undefined;
     this.templateArgument = this.dialogData?.argument ?? undefined;
 
-    if (this.templateArgument && this.inputType && this.inputKey && this.inputName && this.inputValue) {
-      this.inputType.value = this.templateArgument.type;
-      this.inputKey.nativeElement.value = this.templateArgument.key;
+    if (this.templateArgument && this.inputType && this.inputName && this.inputKey) {
       this.inputName.nativeElement.value = this.templateArgument.name;
-      this.inputValue.nativeElement.value = this.templateArgument.defaultValue;
+      this.inputKey.nativeElement.value = this.templateArgument.key;
+      this.inputType.value = this.templateArgument.type;
+
+      if (this.templateArgument.type === 'string') {
+        this.stringDefaultValue = this.templateArgument.option;
+      } else if (this.templateArgument.type === 'select') {
+        const options: { keywords: string[]; default: string } = JSON.parse(this.templateArgument.option);
+        this.selectKeywords = [...options.keywords];
+        this.selectDefaultValue = options.default;
+      }
     }
   }
 
+  removeKeyword(keyword: string) {
+    const index = this.selectKeywords.indexOf(keyword);
+    if (index >= 0) {
+      this.selectKeywords.splice(index, 1);
+    }
+  }
+
+  addKeywords(event: MatChipInputEvent) {
+    const value = (event.value || '').trim();
+
+    if (value) {
+      this.selectKeywords.push(value);
+    }
+
+    event.chipInput!.clear();
+  }
+
   getTitle() {
-    return this.templateArgument ? `Update` : 'Create argument';
+    return this.templateArgument ? 'Update' : 'Create argument';
   }
 
   getFinishButtonName() {
@@ -85,23 +119,41 @@ export class CreateArgumentComponent implements OnInit {
   }
 
   updateArgument() {
-    const type = this.inputType?.value;
-    const key = this.inputKey?.nativeElement.value;
     const name = this.inputName?.nativeElement.value;
-    const value = this.inputValue?.nativeElement.value;
-    if (!(typeof (type) === 'string' && type.length > 0)) {
-      this.snackbar.open('Type must be at least 1 characters long!');
-      return;
-    }
-    if (!(typeof (key) === 'string' && key.length > 0)) {
-      this.snackbar.open('Key must be at least 1 characters long!');
-      return;
-    }
     if (!(typeof (name) === 'string' && name.length > 0)) {
       this.snackbar.open('Name must be at least 1 characters long!');
       return;
     }
-    if (typeof (value) !== 'string') {
+
+    const key = this.inputKey?.nativeElement.value;
+    if (!(typeof (key) === 'string' && key.length > 0)) {
+      this.snackbar.open('Key must be at least 1 characters long!');
+      return;
+    }
+
+    const type = this.inputType?.value;
+    if (!(typeof (type) === 'string' && type.length > 0)) {
+      this.snackbar.open('Type must be at least 1 characters long!');
+      return;
+    }
+
+    let option = '';
+    if (type === 'string') {
+      option = this.stringDefaultValue;
+    } else if (type === 'select') {
+      if (this.selectKeywords.length > 0) {
+        option = JSON.stringify({
+          keywords: this.selectKeywords,
+          default: this.selectDefaultValue
+        });
+      } else {
+        option = '';
+      }
+    } else {
+      option = '';
+    }
+
+    if (typeof (option) !== 'string') {
       this.snackbar.open('Value is not a string!');
       return;
     }
@@ -115,7 +167,7 @@ export class CreateArgumentComponent implements OnInit {
       this.templateArgument.type = type;
       this.templateArgument.key = key;
       this.templateArgument.name = name;
-      this.templateArgument.defaultValue = value;
+      this.templateArgument.option = option;
       this.templateService.updateTemplate(this.template);
       this.snackbar.open('Argument updated.');
     } else {
@@ -128,7 +180,7 @@ export class CreateArgumentComponent implements OnInit {
         type,
         key,
         name,
-        defaultValue: value
+        option: option
       };
 
       if (this.templateSection.arguments) {

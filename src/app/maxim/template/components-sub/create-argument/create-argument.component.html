@@ -7,27 +7,67 @@
   
   <br />
 
+  <mat-form-field class="create-section-input">
+    <mat-label>Key</mat-label>
+    <input matInput #key placeholder="Replace this value">
+  </mat-form-field>
+  
+  <br />
+
   <form>
     <mat-form-field class="create-section-input">
       <mat-label>Type</mat-label>
       <mat-select #type>
         <mat-option value="string" selected>String</mat-option>
+        <mat-option value="select" selected>Select</mat-option>
       </mat-select>
     </mat-form-field>
-    
-    <br />
 
-    <mat-form-field class="create-section-input">
-      <mat-label>Key</mat-label>
-      <textarea matInput #key placeholder="Replace this value"></textarea>
-    </mat-form-field>
-    
     <br />
+    
+    @switch (type.value) {
+      @case ('select') {
+        <mat-form-field class="create-section-input">
+          <mat-label>Video keywords</mat-label>
+          <mat-chip-grid #chipGrid aria-label="Enter keywords" [formControl]="selectFormControl" >
+            @for (keyword of selectKeywords; track keyword) {
+              <mat-chip-row (removed)="removeKeyword(keyword)">
+                {{keyword}}
+                <button matChipRemove>
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip-row>
+            }
+          </mat-chip-grid>
+          <input placeholder="New keyword..."
+            name="input-select"
+            [matChipInputFor]="chipGrid"
+            (matChipInputTokenEnd)="addKeywords($event)"/>
+        </mat-form-field>
 
-    <mat-form-field class="create-section-input">
-      <mat-label>Default value</mat-label>
-      <textarea matInput #value placeholder="Default replace content"></textarea>
-    </mat-form-field>
+        <br />
+
+        <mat-form-field class="create-section-input">
+          <mat-label>Default value</mat-label>
+          <mat-select 
+            name="input-select-default"
+            [(ngModel)]="selectDefaultValue">
+            <mat-option [value]="">No default value</mat-option>
+            @for (keyword of selectKeywords; track $index) {
+              <mat-option [value]="keyword">{{keyword}}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      @case ('string') {
+        <mat-form-field class="create-section-input">
+          <mat-label>Default value</mat-label>
+          <textarea matInput placeholder="Default replace content" name="input-string" [(ngModel)]="stringDefaultValue"></textarea>
+        </mat-form-field>
+      }
+      @default {
+      }
+    }
   </form>
 </mat-dialog-content>
 <mat-dialog-actions>

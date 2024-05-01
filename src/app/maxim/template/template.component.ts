@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckbox, MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,11 +10,12 @@ import { MatInput, MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CreateSectionComponent } from './components-sub/create-section/create-section.component';
 import { CreateTemplateComponent } from '../../dialog/create-template/create-template.component';
 import { SectionArgument, Template, TemplateSection, TemplateService } from '../../services/template.service';
+import { ArgumentSelectComponent } from './components-sub/argument-select/argument-select.component';
 import { ArgumentStringComponent } from './components-sub/argument-string/argument-string.component';
 import { CreateArgumentComponent } from './components-sub/create-argument/create-argument.component';
+import { CreateSectionComponent } from './components-sub/create-section/create-section.component';
 
 @Component({
   selector: 'maxim-template',
@@ -29,7 +30,8 @@ import { CreateArgumentComponent } from './components-sub/create-argument/create
     MatExpansionModule,
     MatFormFieldModule,
     MatCheckboxModule,
-    ArgumentStringComponent
+    ArgumentStringComponent,
+    ArgumentSelectComponent
   ],
   templateUrl: './template.component.html',
   styleUrl: './template.component.scss'
@@ -160,6 +162,10 @@ export default class TemplateComponent implements OnInit {
     return this.template!.sections;
   }
 
+  isSectionEnabled(section: TemplateSection) {
+    return this.sectionSelected.indexOf(section) !== -1;
+  }
+
   createArgument(section: TemplateSection, argument?: SectionArgument) {
     this.dialog.open(CreateArgumentComponent, {
       data: {
@@ -198,7 +204,7 @@ export default class TemplateComponent implements OnInit {
         if (index !== -1) {
           value = this.argumentValues[index];
         } else {
-          value = argument.defaultValue;
+          value = argument.option;
         }
 
         content = content.replaceAll(argument.key, value);

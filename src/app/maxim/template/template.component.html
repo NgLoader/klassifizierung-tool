@@ -51,7 +51,7 @@
 
             <mat-checkbox
               (change)="toggleSection($event, section)"
-              [checked]="section.defaultEnabled">Enabled</mat-checkbox>
+              [checked]="isSectionEnabled(section)">Enabled</mat-checkbox>
 
             <br />
             <br />
@@ -59,7 +59,13 @@
             <div class="template-editor-argument-list">
               @for (argument of section.arguments; track $index) {
                 @switch (argument.type) {
-                  @case ('number') {
+                  @case ('select') {
+                    <maxim-argument-select
+                      class="template-editor-argument"
+                      [template]="template!"
+                      [section]="section"
+                      [argument]="argument"
+                      (valueChanged)="argumentValueChanged(argument, $event)"></maxim-argument-select>
                   }
                   @default {
                     <maxim-argument-string

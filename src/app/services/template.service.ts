@@ -21,7 +21,7 @@ export interface SectionArgument {
   type: string;
   name: string;
   key: string;
-  defaultValue: string;
+  option: string;
 }
 
 @Injectable({
