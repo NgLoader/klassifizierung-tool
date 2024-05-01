@@ -3,12 +3,13 @@ import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core'
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInput, MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CreateTemplateComponent } from '../../dialog/create-template/create-template.component';
 import { SectionArgument, Template, TemplateSection, TemplateService } from '../../services/template.service';
@@ -30,6 +31,7 @@ import { CreateSectionComponent } from './components-sub/create-section/create-s
     MatExpansionModule,
     MatFormFieldModule,
     MatCheckboxModule,
+    MatTooltipModule,
     ArgumentStringComponent,
     ArgumentSelectComponent
   ],
@@ -51,6 +53,8 @@ export default class TemplateComponent implements OnInit {
   private argumentValues: string[] = [];
 
   template?: Template;
+
+  @ViewChild(MatAccordion) accordion!: MatAccordion;
 
   @ViewChild('code', { static: true }) resultCode?: ElementRef<MatInput>;
   codeRows: number = 1;

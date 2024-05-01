@@ -1,4 +1,4 @@
-<mat-toolbar>
+<mat-toolbar class="template-toolbar">
   <button mat-icon-button [routerLink]="['/']">
     <mat-icon>arrow_back</mat-icon>
   </button>
@@ -8,6 +8,30 @@
   <button mat-icon-button (click)="editName()">
     <mat-icon>edit</mat-icon>
   </button>
+
+  <div class="template-toolbar-spacer"></div>
+  
+  <button
+    mat-icon-button
+    matTooltip="Open all sections"
+    (click)="accordion.openAll()">
+    <mat-icon>unfold_more</mat-icon>
+  </button>
+  <button
+    mat-icon-button
+    matTooltip="Close all sections"
+    (click)="accordion.closeAll()">
+    <mat-icon>unfold_less</mat-icon>
+  </button>
+  <button
+    mat-raised-button
+    class="template-toolbar-button"
+    (click)="createSection()">Create section</button>
+  <button
+    mat-raised-button
+    class="template-toolbar-button"
+    color="primary"
+    (click)="generate()">Generate</button>
 </mat-toolbar>
 
 <div class="template-content"
@@ -33,9 +57,9 @@
 
   <div class="template-editor">
     @if (hasSections()) {
-      <mat-accordion class="template-editor-align">
+      <mat-accordion class="template-editor-align" multi>
         @for (section of getSections(); track $index) {
-          <mat-expansion-panel [expanded]="$index === 0" (opened)="setStep($index)" hideToggle>
+          <mat-expansion-panel [expanded]="true" (opened)="setStep($index)" hideToggle>
             <mat-expansion-panel-header>
               <mat-panel-title>
                 {{section.name}}
@@ -94,23 +118,9 @@
             <div class="template-editor-section">
               <button mat-stroked-button (click)="createArgument(section)">Create argument</button>
             </div>
-
-            <mat-action-row>
-              @if ($index !== 0) {
-                <button mat-button color="warn" (click)="prevStep()">Previous</button>
-              }
-              @if ($index !== getSections().length - 1) {
-                <button mat-button color="primary" (click)="nextStep()">Next</button>
-              }
-            </mat-action-row>
           </mat-expansion-panel>
         }
       </mat-accordion>
     }
-
-    <div class="template-editor-section">
-      <button mat-raised-button (click)="createSection()">Create section</button>
-      <button mat-raised-button color="primary" (click)="generate()">Generate</button>
-    </div>
   </div>
 </div>

@@ -5,6 +5,14 @@
   width: 100%;
 }
 
+.template-toolbar-spacer {
+  flex: 1;
+}
+
+.template-toolbar-button {
+  margin-left: 1em;
+}
+
 .template-content {
   flex: 1;
 
@@ -20,7 +28,7 @@
 }
 
 .template-dragger {
-  width: 2px;
+  width: 4px;
 
   cursor: pointer;
 
