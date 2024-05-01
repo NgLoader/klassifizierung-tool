@@ -52,9 +52,10 @@ export default class TemplateComponent implements OnInit {
 
   template?: Template;
 
-  @ViewChild('dragger', { static: true }) dragger?: ElementRef<HTMLDivElement>;
   @ViewChild('code', { static: true }) resultCode?: ElementRef<MatInput>;
+  codeRows: number = 1;
 
+  @ViewChild('dragger', { static: true }) dragger?: ElementRef<HTMLDivElement>;
   draggerHolding: boolean = false;
   draggerOffset: number = 0;
 
@@ -221,7 +222,9 @@ export default class TemplateComponent implements OnInit {
       message += `\n${content}`;
     }
 
-    this.resultCode.nativeElement.value = message.trim();
+    const code = message.trim();
+    this.resultCode.nativeElement.value = code;
+    this.codeRows = code.split(/\r?\n/).length;
   }
 
   moveArray(array: (object | undefined)[], oldIndex: number, newIndex: number) {
