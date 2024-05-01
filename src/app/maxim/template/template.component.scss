@@ -5,6 +5,12 @@
   width: 100%;
 }
 
+.template-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 .template-toolbar-spacer {
   flex: 1;
 }
