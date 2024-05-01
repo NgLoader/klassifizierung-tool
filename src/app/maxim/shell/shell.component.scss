@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.shell-toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.shell-router {
+  flex: 1;
+}

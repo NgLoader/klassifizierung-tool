@@ -1,0 +1,98 @@
+<mat-toolbar>
+  <button mat-icon-button [routerLink]="['/']">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  @if (!loading) {
+    <span>{{getName()}}</span>
+  }
+  <button mat-icon-button (click)="editName()">
+    <mat-icon>edit</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="template-content"
+  (mousemove)="draggerMouseMove($event)">
+  <mat-form-field
+  class="template-result"
+  appearance="fill"
+  [style.width.px]="draggerOffset">
+    <textarea
+    matInput
+    #code
+    placeholder="Generated code will be visible here"
+    rows="12"></textarea>
+  </mat-form-field>
+
+  <div
+    #dragger
+    class="template-dragger"
+    (mouseup)="draggerMouseUp($event)"
+    (mousedown)="draggerMouseDown($event)"
+    [style.cursor]="draggerHolding ? 'col-resize' : 'pointer'">
+  </div>
+
+  <div class="template-editor">
+    @if (hasSections()) {
+      <mat-accordion class="template-editor-align">
+        @for (section of getSections(); track $index) {
+          <mat-expansion-panel [expanded]="step === $index" (opened)="setStep($index)" hideToggle>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                {{section.name}}
+              </mat-panel-title>
+              <mat-panel-description>
+                {{section.description}}
+
+                <button mat-icon-button (click)="editSection($event, section)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <mat-checkbox
+              (change)="toggleSection($event, section)"
+              [checked]="section.defaultEnabled">Enabled</mat-checkbox>
+
+            <br />
+            <br />
+
+            <div class="template-editor-argument-list">
+              @for (argument of section.arguments; track $index) {
+                @switch (argument.type) {
+                  @case ('number') {
+                  }
+                  @default {
+                    <maxim-argument-string
+                      class="template-editor-argument"
+                      [template]="template!"
+                      [section]="section"
+                      [argument]="argument"
+                      (valueChanged)="argumentValueChanged(argument, $event)"></maxim-argument-string>
+                  }
+                }
+              }
+            </div>
+
+            <div class="template-editor-section">
+              <button mat-stroked-button (click)="createArgument(section)">Create argument</button>
+            </div>
+
+            <mat-action-row>
+              @if ($index !== 0) {
+                <button mat-button color="warn" (click)="prevStep()">Previous</button>
+              }
+              @if ($index !== getSections().length - 1) {
+                <button mat-button color="primary" (click)="nextStep()">Next</button>
+              }
+            </mat-action-row>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    }
+
+    <div class="template-editor-section">
+      <button mat-raised-button (click)="createSection()">Create section</button>
+      <button mat-raised-button color="primary" (click)="generate()">Generate</button>
+    </div>
+  </div>
+</div>

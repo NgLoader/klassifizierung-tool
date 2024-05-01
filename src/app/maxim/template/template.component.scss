@@ -1,0 +1,64 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.template-content {
+  flex: 1;
+
+  display: flex;
+  flex-direction: row;
+}
+
+.template-result {
+  height: 100%;
+  width: 40vw;
+  min-width: 100px;
+  max-width: 80vw;
+}
+
+.template-dragger {
+  width: 2px;
+
+  cursor: pointer;
+
+  transition: all 0.25s;
+
+  &:hover {
+    background-color: rgba($color: #000000, $alpha: 0.4);
+  }
+}
+
+.template-editor {
+  flex: 1;
+  height: 100%;
+}
+
+.template-editor-align .mat-expansion-panel-header-description {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.template-editor-align .mat-mdc-form-field + .mat-mdc-form-field {
+  margin-left: 8px;
+}
+
+.template-editor-section {
+  display: flex;
+  flex-direction: row;
+
+  gap: 0.5em;
+  width: 100%;
+  padding: 0.5em 0;
+
+  justify-content: center;
+}
+
+.template-editor-argument-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1em;
+}

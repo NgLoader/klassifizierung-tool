@@ -1,0 +1,27 @@
+<mat-toolbar>
+  <span [routerLink]="['/']">Klassifizierung Tool</span>
+
+  <span class="shell-toolbar-spacer"></span>
+
+  <button mat-icon-button (click)="createTemplate()">
+    <mat-icon>add</mat-icon>
+  </button>
+  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Settings">
+    <mat-icon>settings</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div class="shell-router">
+  <router-outlet></router-outlet>
+</div>
+
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="openImport()">
+    <mat-icon>system_update_alt</mat-icon>
+    <span>Import from file</span>
+  </button>
+  <button mat-menu-item (click)="exportAll()">
+    <mat-icon>share_windows</mat-icon>
+    <span>Export all data</span>
+  </button>
+</mat-menu>

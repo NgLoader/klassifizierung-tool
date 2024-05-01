@@ -1,0 +1,7 @@
+<mat-form-field>
+  <mat-label>{{argument.name}}</mat-label>
+  <input matInput placeholder="Replacement" [value]="argument.defaultValue">
+  <button mat-icon-button matSuffix (click)="updateArgument($event)">
+    <mat-icon matSuffix>mode_edit</mat-icon>
+  </button>
+</mat-form-field>

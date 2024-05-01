@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>{{getTitle()}}</h2>
+<mat-dialog-content>
+  <form>
+    <mat-form-field class="create-template-input">
+      <mat-label>Name</mat-label>
+      <input matInput #name placeholder="NgLoader">
+    </mat-form-field>
+    
+    <br />
+
+    <mat-form-field class="create-template-input">
+      <mat-label>Description</mat-label>
+      <textarea matInput #description placeholder="What your doing!?"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="updateTemplate()" color="primary" cdkFocusInitial>
+    {{getFinishButtonName()}}
+  </button>
+  <button mat-button mat-dialog-close="">Close</button>
+</mat-dialog-actions>

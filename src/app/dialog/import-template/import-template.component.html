@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>Import template</h2>
+<mat-dialog-content>
+  <button mat-stroked-button (click)="importFromFile()">Import from file</button>
+
+  <div class="import-template-spacer"></div>
+
+  <form>
+    <mat-form-field class="import-template">
+      <mat-label>Import from json string</mat-label>
+      <textarea #jsonInput matInput placeholder="Paste your exported content here"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="importTemplate()" color="primary" cdkFocusInitial>Import</button>
+  <button mat-button mat-dialog-close="">Close</button>
+</mat-dialog-actions>
