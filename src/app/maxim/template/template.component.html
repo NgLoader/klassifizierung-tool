@@ -35,7 +35,7 @@
     @if (hasSections()) {
       <mat-accordion class="template-editor-align">
         @for (section of getSections(); track $index) {
-          <mat-expansion-panel [expanded]="step === $index" (opened)="setStep($index)" hideToggle>
+          <mat-expansion-panel [expanded]="$index === 0" (opened)="setStep($index)" hideToggle>
             <mat-expansion-panel-header>
               <mat-panel-title>
                 {{section.name}}
