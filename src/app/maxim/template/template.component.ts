@@ -67,8 +67,8 @@ export default class TemplateComponent implements OnInit {
     this.draggerOffset = Number(localStorage.getItem('dragger-section-position'));
 
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.template = this.service.getTemplate(id);
+    this.template = this.service.getTemplate(id ?? '');
+    if (this.template) {
       this.loading = false;
 
       for (const section of this.template.sections) {
