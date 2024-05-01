@@ -99,7 +99,7 @@ export class TemplateService {
   exportTemplate(template: Template) {
     const clone = Object.assign({}, template);
     delete clone._id;
-    const exportString = JSON.stringify(template);
+    const exportString = JSON.stringify(clone);
     return exportString;
   }
 
@@ -130,8 +130,8 @@ export class TemplateService {
         }
       } else if (parse.name && typeof(parse.name) === 'string') {
         if (this.validTemplate(parse)) {
-          if (typeof(parse.id) !== 'string') {
-            parse.id = this.generateRandomId();
+          if (typeof(parse._id) !== 'string') {
+            parse._id = this.generateRandomId();
           }
 
           templates.push(parse);
