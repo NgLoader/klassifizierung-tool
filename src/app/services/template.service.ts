@@ -40,7 +40,7 @@ export class TemplateService {
   private generateRandomId() {
     let key;
     do {
-      key = 'xxxxxxxx'.replace(/[xy]/g, function(c) {
+      key = 'xxxxxxxx'.replace(/[xy]/g, function() {
         const r = Math.random() * 16 | 0;
         return r.toString(16);
       });
@@ -58,7 +58,7 @@ export class TemplateService {
           const templates = this.parseTemplate(value);
           if (templates && templates.length > 0) {
             const template = templates[0];
-            let key = storageKey.replace(this.storagePrefix, '');
+            const key = storageKey.replace(this.storagePrefix, '');
 
             if (template._id === key) {
               this.templateList[key] = template;
@@ -118,7 +118,7 @@ export class TemplateService {
   }
 
   parseTemplate(json: string): Template[] | undefined {
-    let templates: Template[] = [];
+    const templates: Template[] = [];
     try {
       const parse = JSON.parse(json);
 

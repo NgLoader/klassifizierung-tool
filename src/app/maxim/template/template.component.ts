@@ -154,6 +154,15 @@ export default class TemplateComponent implements OnInit {
     }
   }
 
+  moveSection(event: Event, section: TemplateSection, direction: 'up' | 'down') {
+    event.stopPropagation();
+    const sections = this.template?.sections;
+    const index = sections?.indexOf(section);
+    if (typeof(index) === 'number' && index !== -1) {
+      this.moveArray(sections as object[], index, (direction === 'up' ? (index + 1) : (index - 1)));
+    }
+  }
+
   hasSections() {
     return this.template!.sections.length > 0;
   }
@@ -213,5 +222,17 @@ export default class TemplateComponent implements OnInit {
     }
 
     this.resultCode.nativeElement.value = message.trim();
+  }
+
+  moveArray(array: (object | undefined)[], oldIndex: number, newIndex: number) {
+    if (newIndex >= array.length) {
+      let k = newIndex - array.length + 1;
+      while (k--) {
+        array.push(undefined);
+      }
+    }
+
+    array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
+    return array;
   }
 }

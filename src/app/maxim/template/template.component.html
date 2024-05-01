@@ -43,9 +43,21 @@
               <mat-panel-description>
                 {{section.description}}
 
-                <button mat-icon-button (click)="editSection($event, section)">
-                  <mat-icon>edit</mat-icon>
-                </button>
+                <div>
+                  @if ($index !== getSections().length - 1) {
+                    <button mat-icon-button (click)="moveSection($event, section, 'up')">
+                      <mat-icon>expand_more</mat-icon>
+                    </button>
+                  }
+                  @if ($index !== 0) {
+                    <button mat-icon-button (click)="moveSection($event, section, 'down')">
+                      <mat-icon>expand_less</mat-icon>
+                    </button>
+                  }
+                  <button mat-icon-button (click)="editSection($event, section)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </div>
               </mat-panel-description>
             </mat-expansion-panel-header>
 
