@@ -1,28 +1,5 @@
 import { Injectable } from '@angular/core';
-
-export interface Template {
-  _id?: string;
-
-  name: string;
-  description: string;
-
-  sections: TemplateSection[];
-}
-
-export interface TemplateSection {
-  name: string;
-  description: string;
-  content: string;
-  defaultEnabled: boolean;
-  arguments: SectionArgument[];
-}
-
-export interface SectionArgument {
-  type: string;
-  name: string;
-  key: string;
-  option: string;
-}
+import { Template, TemplateOptions } from './../models/template.model';
 
 @Injectable({
   providedIn: 'root'
@@ -55,60 +32,60 @@ export class TemplateService {
       if (storageKey?.startsWith(this.storagePrefix)) {
         const value = localStorage.getItem(storageKey);
         if (value) {
-          const templates = this.parseTemplate(value);
-          if (templates && templates.length > 0) {
-            const template = templates[0];
+          const templateOptions = this.parseTemplate(value);
+          if (templateOptions && templateOptions.length > 0) {
+            const options = templateOptions[0];
             const key = storageKey.replace(this.storagePrefix, '');
-
-            if (template._id === key) {
-              this.templateList[key] = template;
-            } else {
-              console.log(`Updating outdatted template id '${key}' to '${template._id}'!`);
-              localStorage.removeItem(storageKey);
-              this.updateTemplate(template);
-            }
+            this.templateList[key] = new Template(key, options);
           }
         }
       }
     }
   }
 
+  createTemplate(options: TemplateOptions) {
+    return new Template(this.generateRandomId(), options);
+  }
+
   getTemplate(key: string) {
     return this.templateList[key];
   }
 
-  updateTemplate(template: Template) {
-    let key = template._id;
-    if (!key) {
-      key = this.generateRandomId();
-      template._id = key;
-    }
-
-    localStorage.setItem(`${this.storagePrefix}${key}`, JSON.stringify(template));
-    this.templateList[key] = template;
+  saveTemplate(template: Template) {
+    const key = template.id;
+    const data = template.save();
+    localStorage.setItem(`${this.storagePrefix}${key}`, JSON.stringify(data));
   }
 
   removeTemplate(template: Template) {
-    const key = template._id;
-    if (key) {
-      localStorage.removeItem(`${this.storagePrefix}${key}`);
-      delete this.templateList[key];
+    const key = template.id;
+    localStorage.removeItem(`${this.storagePrefix}${key}`);
+    delete this.templateList[key];
+  }
+
+  resetTemplate(template: Template) {
+    const storageContent = localStorage.getItem(`${this.storagePrefix}${template.id}`);
+    if (!storageContent) {
+      // TODO log error because no storage content was found
+      return;
+    }
+
+    const options = this.parseTemplate(storageContent);
+    if (options && options.length > 0) {
+      template.load(options[0]);
+    } else {
+      // TODO log error because storage content is invalid
     }
   }
 
   exportTemplate(template: Template) {
-    const clone = Object.assign({}, template);
-    delete clone._id;
-    const exportString = JSON.stringify(clone);
-    return exportString;
+    return JSON.stringify(template.save());
   }
 
   exportAllTemplates() {
-    const templates: Template[] = [];
+    const templates: TemplateOptions[] = [];
     for (const template of Object.values(this.templateList)) {
-      const templateClone = Object.assign({}, template);
-      delete templateClone._id;
-      templates.push(templateClone);
+      templates.push(template.save());
     }
 
     const json = JSON.stringify({
@@ -117,8 +94,8 @@ export class TemplateService {
     return templates.length > 0 ? json : undefined;
   }
 
-  parseTemplate(json: string): Template[] | undefined {
-    const templates: Template[] = [];
+  parseTemplate(json: string): TemplateOptions[] | undefined {
+    const templates: TemplateOptions[] = [];
     try {
       const parse = JSON.parse(json);
 
@@ -130,10 +107,6 @@ export class TemplateService {
         }
       } else if (parse.name && typeof(parse.name) === 'string') {
         if (this.validTemplate(parse)) {
-          if (typeof(parse._id) !== 'string') {
-            parse._id = this.generateRandomId();
-          }
-
           templates.push(parse);
         }
       }
@@ -144,7 +117,7 @@ export class TemplateService {
     return templates;
   }
 
-  validTemplate(template: Template): boolean {
+  validTemplate(template: TemplateOptions): boolean {
     if (template.name && template.description) {
       return true;
     }
