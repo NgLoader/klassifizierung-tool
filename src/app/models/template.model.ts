@@ -1,4 +1,5 @@
-import { EventEmitter, signal } from '@angular/core';
+import { Signal, effect, signal } from '@angular/core';
+import { TemplateService } from '../services/template.service';
 import { SectionTemplate, SectionTemplateOptions } from './section.model';
 
 export interface TemplateOptions {
@@ -9,64 +10,77 @@ export interface TemplateOptions {
 
 export class Template {
 
-  private _id: string;
+  readonly service: Signal<TemplateService>;
+  readonly id: Signal<string>;
 
-  private _name = signal('');
-  readonly name = this._name.asReadonly();
+  readonly name = signal('');
+  readonly description = signal('');
 
-  private _description = signal('');
-  readonly description = this._description.asReadonly();
+  readonly sections = signal<SectionTemplate[]>([]);
 
-  private _sections = signal<SectionTemplate[]>([]);
-  private sections = this._sections.asReadonly();
+  private ignoreFirstCall: boolean = true;
 
-  readonly changeEvent = new EventEmitter();
-
-  constructor(id: string, options: TemplateOptions) {
-    this._id = id;
+  constructor(service: TemplateService, id: string, options: TemplateOptions) {
+    this.service = signal(service).asReadonly();
+    this.id = signal(id).asReadonly();
 
     if (options) {
-      this.load(options);
+      this.loadConfig(options);
     }
+
+    effect(() => {
+      // ignore initalize call
+      if (this.ignoreFirstCall) {
+        this.ignoreFirstCall = false;
+
+        // enable change listener
+        this.name();
+        this.description();
+        this.sections();
+        return;
+      }
+
+      this.service().saveTemplate(this);
+    });
   }
 
-  setName(name: string) {
-    this._name.set(name);
-    this.changeEvent.emit();
+  createSection(options: SectionTemplateOptions) {
+    const section = this.service().runInInjectionContext(() => new SectionTemplate(this, options));
+
+    const sections = this.sections();
+    this.sections.set([ ...sections, section ]);
   }
 
-  setDescription(description: string) {
-    this._description.set(description);
-    this.changeEvent.emit();
+  removeSection(section: SectionTemplate) {
+    const sections = this.sections();
+    const index = sections.indexOf(section);
+    if (index !== -1) {
+      sections.splice(index, 1);
+    }
+    this.sections.set([...sections]);
   }
 
-  load(options: TemplateOptions) {
-    // TODO validate and throw error
-    this._name.set(options.name);
-    this._description.set(options.description);
+  loadConfig(options: TemplateOptions) {
+    this.name.set(options.name);
+    this.description.set(options.description);
 
     const sectionList: SectionTemplate[] = [];
     for (const sectionOptions of options.sections) {
-      const section = new SectionTemplate(this);
-      section.load(sectionOptions);
+      const section = new SectionTemplate(this, sectionOptions);
       sectionList.push(section);
     }
-    this._sections.set(sectionList);
+    this.sections.set([...sectionList]);
   }
 
-  save(): TemplateOptions {
-    try {
-      return {
-        name: this.name(),
-        description: this.description(),
-        sections: this.sections().map(section => section.save())
-      };
-    } finally {
-      this.changeEvent.emit();
-    }
+  saveConfig(): TemplateOptions {
+    return {
+      name: this.name(),
+      description: this.description(),
+      sections: this.sections().map(section => section.saveConfig())
+    };
   }
 
-  get id() {
-    return this._id;
+  saveToLocalStorage() {
+    this.service().saveTemplate(this);
   }
 }

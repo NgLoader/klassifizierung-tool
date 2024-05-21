@@ -1,21 +1,21 @@
 <h2 mat-dialog-title>{{getTitle()}}</h2>
 <mat-dialog-content>
   <form>
-    <mat-form-field class="create-section-input">
+    <mat-form-field class="section-create-input">
       <mat-label>Name</mat-label>
       <input matInput #name placeholder="NgLoader">
     </mat-form-field>
     
     <br />
 
-    <mat-form-field class="create-section-input">
+    <mat-form-field class="section-create-input">
       <mat-label>Description</mat-label>
       <textarea matInput #description placeholder="What your doing!?"></textarea>
     </mat-form-field>
     
     <br />
 
-    <mat-form-field class="create-section-input">
+    <mat-form-field class="section-create-input">
       <mat-label>Content</mat-label>
       <textarea matInput #content placeholder="Thats your final message"></textarea>
     </mat-form-field>
@@ -30,7 +30,7 @@
     {{getFinishButtonName()}}
   </button>
   @if (showDeleteButton()) {
-    <button mat-button (click)="deleteArgument()" color="warn" cdkFocusInitial>
+    <button mat-button (click)="deleteSection()" color="warn" cdkFocusInitial>
       Delete
     </button>
   }

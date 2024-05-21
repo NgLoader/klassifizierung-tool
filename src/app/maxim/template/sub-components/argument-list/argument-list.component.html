@@ -1,0 +1,14 @@
+@for (argument of getArguments(); track $index) {
+  <ng-container
+  [ngComponentOutlet]="argument.getDisplayComponent()"
+  [ngComponentOutletInputs]="{
+    section: section(),
+    argument
+  }"></ng-container>
+}
+
+@if (editmode()) {
+  <div class="section-list-argument-create">
+    <button mat-stroked-button (click)="createArgument()">Create argument</button>
+  </div>
+}

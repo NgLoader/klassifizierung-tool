@@ -1,6 +1,7 @@
-import { EventEmitter, signal } from '@angular/core';
-import { SectionArgument, SectionArgumentOptions } from './arguments/argument.model';
-import { StringArgument } from './arguments/argument-string.model';
+import { Signal, effect, signal } from '@angular/core';
+import { StringArgument, StringArgumentOptions } from './arguments/string/argument-string.model';
+import { ArgumentType } from './arguments/argument-type.model';
+import { SectionArgument, SectionArgumentOptions } from './argument.model';
 import { Template } from './template.model';
 
 export interface SectionTemplateOptions {
@@ -8,85 +9,105 @@ export interface SectionTemplateOptions {
   description: string
   content: string
   defaultEnabled: boolean
-  arguments: SectionArgumentOptions[]
+  arguments: SectionArgumentOptions<object>[]
 }
 
 export class SectionTemplate {
 
-  private _template: Template;
+  readonly template: Signal<Template>;
 
-  private _name = signal('');
-  readonly name = this._name.asReadonly();
+  readonly name = signal('');
+  // readonly name = this._name.asReadonly();
 
-  private _description = signal('');
-  readonly description = this._description.asReadonly();
+  readonly description = signal('');
+  // readonly description = this._description.asReadonly();
 
-  private _content = signal('');
-  readonly content = this._content.asReadonly();
+  readonly content = signal('');
+  // readonly content = this._content.asReadonly();
 
-  private _enabled = signal(false);
-  readonly enabled = this._enabled.asReadonly();
+  readonly defaultEnabled = signal(false);
+  // readonly defaultEnabled = this._defaultEnabled.asReadonly();
 
-  private _arguments = signal<SectionArgument<object>[]>([]);
-  private arguments = this._arguments.asReadonly();
+  private readonly _arguments = signal<SectionArgument<object>[]>([]);
+  readonly arguments = this._arguments.asReadonly();
 
-  readonly changeEvent = new EventEmitter();
+  private ignoreFirstCall: boolean = true;
 
-  constructor(template: Template) {
-    this._template = template;
+  // Temp variables
+  readonly enabled = signal(this.defaultEnabled());
+
+  constructor(template: Template, options: SectionTemplateOptions) {
+    this.template = signal(template).asReadonly();
+    this.loadConfig(options);
+
+    effect(() => {
+      // ignore initalize call
+      if (this.ignoreFirstCall) {
+        this.ignoreFirstCall = false;
+
+        // enable change listener
+        this.name();
+        this.description();
+        this.content();
+        this.defaultEnabled();
+        this.arguments();
+        return;
+      }
+
+      this.template().saveToLocalStorage();
+    });
   }
 
-  setName(name: string) {
-    this._name.set(name);
-    this.changeEvent.emit();
+  private constructArgument(options: SectionArgumentOptions<object>) {
+    return this.template().service().runInInjectionContext(() => {
+      switch (options.type) {
+        case ArgumentType.string:
+          return new StringArgument(this, options as SectionArgumentOptions<StringArgumentOptions>);
+
+        default: throw `Argument type ${options.type} is not registered!`;
+      }
+    });
   }
 
-  setDescription(description: string) {
-    this._description.set(description);
-    this.changeEvent.emit();
+  createArgument(options: SectionArgumentOptions<object>) {
+    const argument = this.constructArgument(options);
+    const argumentList = this.arguments();
+    this._arguments.set([ ...argumentList, argument ]);
   }
 
-  setContent(content: string) {
-    this._content.set(content);
-    this.changeEvent.emit();
+  removeArgument(argument: SectionArgument<object>) {
+    const argumentList = this.arguments();
+    const index = argumentList.indexOf(argument);
+    if (index !== -1) {
+      argumentList.splice(index, 1);
+    }
+    this._arguments.set([...argumentList]);
   }
 
-  setEnabled(enabled: boolean) {
-    this._enabled.set(enabled);
-    this.changeEvent.emit();
-  }
+  loadConfig(options: SectionTemplateOptions) {
+    this.name.set(options.name);
+    this.description.set(options.description);
+    this.content.set(options.content);
+    this.defaultEnabled.set(options.defaultEnabled);
 
-  load(options: SectionTemplateOptions) {
-    // TODO validate and throw error
-    this._name.set(options.name);
-    this._description.set(options.description);
-    this._content.set(options.content);
-    this._enabled.set(options.defaultEnabled);
+    this.enabled.set(this.defaultEnabled());
 
     const argumentList: SectionArgument<object>[] = [];
     for (const argumentOptions of options.arguments) {
-      const argument = new StringArgument(this);
-      argument.load(argumentOptions);
+      const argument = this.constructArgument(argumentOptions);
       argumentList.push(argument);
+      this.createArgument(argumentOptions);
     }
-    this._arguments.set(argumentList);
+    this._arguments.set([...argumentList]);
   }
 
-  save(): SectionTemplateOptions {
-    try {
-      return {
-        name: this.name(),
-        description: this.description(),
-        content: this.content(),
-        defaultEnabled: this.enabled(),
-        arguments: this.arguments().map(argument => argument.save())
-      };
-    } finally {
-      this.changeEvent.emit();
-    }
-  }
-
-  get template() {
-    return this._template;
+  saveConfig(): SectionTemplateOptions {
+    return {
+      name: this.name(),
+      description: this.description(),
+      content: this.content(),
+      defaultEnabled: this.defaultEnabled(),
+      arguments: this.arguments().map(argument => argument.saveConfig())
+    };
   }
 }

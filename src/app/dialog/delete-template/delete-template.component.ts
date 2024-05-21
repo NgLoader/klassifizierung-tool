@@ -26,7 +26,7 @@ export class DeleteTemplateComponent {
   private readonly snackbar = inject(MatSnackBar);
 
   getName() {
-    return this.dialogData.template.name;
+    return this.dialogData.template.name();
   }
 
   deleteTemplate() {

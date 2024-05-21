@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EnvironmentInjector, Injectable, computed, inject, runInInjectionContext, signal } from '@angular/core';
 import { Template, TemplateOptions } from './../models/template.model';
 
 @Injectable({
@@ -6,9 +6,14 @@ import { Template, TemplateOptions } from './../models/template.model';
 })
 export class TemplateService {
 
+  private readonly injector = inject(EnvironmentInjector);
+
   private readonly storagePrefix = 'template-';
 
-  private templateList: { [key: string]: Template } = {};
+  private _templates = signal<Template[]>([]);
+  readonly templates = this._templates.asReadonly();
+
+  readonly templateCount = computed(() => this.templates.length);
 
   constructor() {
     this.loadTemplates();
@@ -36,35 +41,35 @@ export class TemplateService {
           if (templateOptions && templateOptions.length > 0) {
             const options = templateOptions[0];
             const key = storageKey.replace(this.storagePrefix, '');
-            this.templateList[key] = new Template(key, options);
+            const template = new Template(this, key, options);
+            this.addTemplate(template);
           }
         }
       }
     }
   }
 
-  createTemplate(options: TemplateOptions) {
-    return new Template(this.generateRandomId(), options);
+  private addTemplate(template: Template) {
+    this._templates.set([ template, ...this.templates() ]);
   }
 
-  getTemplate(key: string) {
-    return this.templateList[key];
+  createTemplate(options: TemplateOptions): Template {
+    const template = this.runInInjectionContext(() => {
+      return new Template(this, this.generateRandomId(), options);
+    });
+    this.saveTemplate(template);
+    this.addTemplate(template);
+    return template;
   }
 
   saveTemplate(template: Template) {
-    const key = template.id;
-    const data = template.save();
+    const key = template.id();
+    const data = template.saveConfig();
     localStorage.setItem(`${this.storagePrefix}${key}`, JSON.stringify(data));
   }
 
-  removeTemplate(template: Template) {
-    const key = template.id;
-    localStorage.removeItem(`${this.storagePrefix}${key}`);
-    delete this.templateList[key];
-  }
-
   resetTemplate(template: Template) {
-    const storageContent = localStorage.getItem(`${this.storagePrefix}${template.id}`);
+    const storageContent = localStorage.getItem(`${this.storagePrefix}${template.id()}`);
     if (!storageContent) {
       // TODO log error because no storage content was found
       return;
@@ -72,20 +77,20 @@ export class TemplateService {
 
     const options = this.parseTemplate(storageContent);
     if (options && options.length > 0) {
-      template.load(options[0]);
+      template.loadConfig(options[0]);
     } else {
       // TODO log error because storage content is invalid
     }
   }
 
   exportTemplate(template: Template) {
-    return JSON.stringify(template.save());
+    return JSON.stringify(template.saveConfig());
   }
 
   exportAllTemplates() {
     const templates: TemplateOptions[] = [];
-    for (const template of Object.values(this.templateList)) {
-      templates.push(template.save());
+    for (const template of this.templates()) {
+      templates.push(template.saveConfig());
     }
 
     const json = JSON.stringify({
@@ -124,11 +129,23 @@ export class TemplateService {
     return false;
   }
 
-  getTemplateKeys() {
-    return Object.keys(this.templateList);
+  removeTemplate(template: Template) {
+    const key = template.id();
+    localStorage.removeItem(`${this.storagePrefix}${key}`);
+
+    const templates = this.templates();
+    const index = templates.indexOf(template);
+    if (index !== -1) {
+      templates.splice(index, 1);
+    }
+    this._templates.set(templates);
   }
 
-  getTemplateList() {
-    return Object.values(this.templateList);
+  getTemplate(id: string) {
+    return this.templates().find(template => template.id() === id);
+  }
+
+  runInInjectionContext<T>(fn: () => T): T {
+    return runInInjectionContext(this.injector, fn);
   }
 }
