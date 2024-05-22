@@ -10,7 +10,7 @@
             {{section.description()}}
           </div>
   
-          @if (editmode()) {
+          @if (isEditMode()) {
             <div>
               @if ($index !== sectionCount() - 1) {
                 <button
@@ -52,7 +52,7 @@
       <br />
       <br />
   
-      <maxim-argument-list class="section-list-argument" [template]="template()" [section]="section" [editmode]="editmode()"></maxim-argument-list>
+      <maxim-argument-list class="section-list-argument" [template]="template()" [section]="section"></maxim-argument-list>
     </mat-expansion-panel>
   }
 </mat-accordion>

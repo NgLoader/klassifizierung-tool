@@ -4,7 +4,7 @@
   </button>
   <span>{{getName()}}</span>
 
-  @if (editmode()) {
+  @if (isEditMode()) {
     <button mat-icon-button (click)="editName()">
       <mat-icon>edit</mat-icon>
     </button>
@@ -12,6 +12,12 @@
 
   <div class="template-toolbar-spacer"></div>
   
+  @if (isEditMode()) {
+    <button
+    mat-raised-button
+    class="template-toolbar-button"
+    (click)="sectionList.createSection()">Create section</button>
+  }
   <button
     mat-icon-button
     matTooltip="Open all sections"
@@ -24,12 +30,12 @@
     (click)="sectionList.closeAllSections()">
     <mat-icon>unfold_less</mat-icon>
   </button>
-  @if (editmode()) {
-    <button
-    mat-raised-button
-    class="template-toolbar-button"
-    (click)="sectionList.createSection()">Create section</button>
-  }
+  <button
+    mat-icon-button
+    matTooltip="Toggle edit mode"
+    (click)="toggleEditMode()">
+    <mat-icon>{{ isEditMode() ? 'block' : 'edit' }}</mat-icon>
+  </button>
   <button
     mat-raised-button
     class="template-toolbar-button"
@@ -59,9 +65,9 @@
   </div>
 
   <div class="template-editor">
-    <maxim-section-list #sectionList [template]="template()" [editmode]="editmode()"></maxim-section-list>
+    <maxim-section-list #sectionList [template]="template()"></maxim-section-list>
     
-    @if (editmode()) {
+    @if (isEditMode()) {
       <div class="template-editor-section">
         <button mat-raised-button (click)="sectionList.createSection()">Create section</button>
         <button mat-raised-button color="primary" (click)="generate()">Generate</button>

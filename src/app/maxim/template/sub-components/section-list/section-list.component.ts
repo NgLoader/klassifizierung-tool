@@ -13,6 +13,7 @@ import { SectionTemplate, SectionTemplateOptions } from '../../../../models/sect
 import { ArgumentListComponent } from '../argument-list/argument-list.component';
 import { SectionCreateComponent } from '../section-create/section-create.component';
 import { Template } from './../../../../models/template.model';
+import { EditmodeService } from '../../../../services/editmode.service';
 
 @Component({
   selector: 'maxim-section-list',
@@ -34,16 +35,20 @@ import { Template } from './../../../../models/template.model';
 })
 export class SectionListComponent {
 
+  private readonly editmodeService = inject(EditmodeService);
   private readonly dialog = inject(MatDialog);
 
   readonly template = input.required<Template | undefined>();
-  readonly editmode = input.required<boolean>();
 
   readonly sectionAccordion = viewChild.required('sectionList', { read: MatAccordion });
 
   readonly sectionCount = computed(() => this.getSections()?.length ?? 0);
 
   private step = 0;
+
+  isEditMode() {
+    return this.editmodeService.editmode();
+  }
 
   openAllSections() {
     this.sectionAccordion().openAll();

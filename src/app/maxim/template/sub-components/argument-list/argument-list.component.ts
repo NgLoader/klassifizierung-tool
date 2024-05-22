@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { Template } from '../../../../models/template.model';
 import { SectionTemplate } from '../../../../models/section.model';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { EditmodeService } from '../../../../services/editmode.service';
 
 @Component({
   selector: 'maxim-argument-list',
@@ -30,9 +31,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class ArgumentListComponent {
 
+  private readonly editmodeService = inject(EditmodeService);
+
   readonly template = input.required<Template | undefined>();
   readonly section = input.required<SectionTemplate | undefined>();
-  readonly editmode = input.required<boolean>();
+
+  isEditMode() {
+    return this.editmodeService.editmode();
+  }
 
   getArguments() {
     return this.section()?.arguments();

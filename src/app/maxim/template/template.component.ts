@@ -15,6 +15,7 @@ import { CreateTemplateComponent } from '../../dialog/create-template/create-tem
 import { Template } from '../../models/template.model';
 import { TemplateService } from '../../services/template.service';
 import { SectionListComponent } from './sub-components/section-list/section-list.component';
+import { EditmodeService } from '../../services/editmode.service';
 
 @Component({
   selector: 'maxim-template',
@@ -38,13 +39,12 @@ import { SectionListComponent } from './sub-components/section-list/section-list
 export default class TemplateComponent implements OnInit {
 
   private readonly service = inject(TemplateService);
+  private readonly editmodeService = inject(EditmodeService);
 
   private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-
-  readonly editmode = signal(true);
 
   readonly template = signal<Template | undefined>(undefined);
   readonly sectionCount = computed(() => {
@@ -85,6 +85,26 @@ export default class TemplateComponent implements OnInit {
     }
   }
 
+  isEditMode() {
+    return this.editmodeService.editmode();
+  }
+
+  toggleEditMode() {
+    this.editmodeService.setEditmode(!this.isEditMode());
+  }
+
+  getName() {
+    return this.template()?.name() ?? 'Loading';
+  }
+
+  editName() {
+    this.dialog.open(CreateTemplateComponent, {
+      data: {
+        template: this.template()
+      }
+    });
+  }
+
   stopPropagation(event: Event) {
     event.stopPropagation();
   }
@@ -107,18 +127,6 @@ export default class TemplateComponent implements OnInit {
     }
   }
 
-  getName() {
-    return this.template()?.name() ?? 'Loading';
-  }
-
-  editName() {
-    this.dialog.open(CreateTemplateComponent, {
-      data: {
-        template: this.template()
-      }
-    });
-  }
-
   generate() {
     const template = this.template();
     if (!template) {
@@ -139,7 +147,6 @@ export default class TemplateComponent implements OnInit {
     }
 
     const code = message.trim();
-    console.log(code);
     this.code.set(code);
   }
 }

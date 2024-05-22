@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-import { ArgumentComponent } from '../../argument-component';
+import { ArgumentEditComponent } from '../../argument-edit-component';
 import { StringArgumentOptions } from '../argument-string.model';
-import { SectionArgumentOptions } from '../../../argument.model';
 
 @Component({
   selector: 'maxim-argument-string-edit',
@@ -10,9 +9,5 @@ import { SectionArgumentOptions } from '../../../argument.model';
   templateUrl: './argument-string-edit.component.html',
   styleUrl: './argument-string-edit.component.scss'
 })
-export class ArgumentStringEditComponent extends ArgumentComponent<StringArgumentOptions> {
-
-  override update(options: SectionArgumentOptions<StringArgumentOptions>): void {
-    
-  }
+export class ArgumentStringEditComponent extends ArgumentEditComponent<StringArgumentOptions> {
 }

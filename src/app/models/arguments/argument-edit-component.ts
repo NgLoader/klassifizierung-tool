@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
   ],
   template: ''
 })
-export abstract class ArgumentComponent<TOptions> {
+export abstract class ArgumentEditComponent<TOptions> {
 
   readonly section = input.required<SectionTemplate>();
   readonly argument = input<SectionArgument<SectionArgumentOptions<TOptions>> | SectionArgumentOptions<TOptions> | undefined>();
