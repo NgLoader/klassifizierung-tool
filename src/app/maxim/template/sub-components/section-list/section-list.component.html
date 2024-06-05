@@ -1,6 +1,6 @@
 <mat-accordion #sectionList class="section-list-button-align" multi>
   @for (section of getSections(); track $index) {
-    <mat-expansion-panel [expanded]="true" (opened)="setStep($index)" hideToggle>
+    <mat-expansion-panel class="section-list-panel" [expanded]="true" (opened)="setStep($index)" hideToggle>
       <mat-expansion-panel-header>
         <mat-panel-title>
           {{section.name()}}

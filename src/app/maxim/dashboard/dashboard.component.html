@@ -1,7 +1,7 @@
 <div class="dashboard">
   <div class="dashboard-template-list">
     @for (template of getTemplates(); track $index) {
-      <mat-card class="dashboard-template-entry">
+      <mat-card class="dashboard-template-entry" appearance="outlined">
         <mat-card-header>
           <mat-card-title>{{ template.name() }}</mat-card-title>
         </mat-card-header>

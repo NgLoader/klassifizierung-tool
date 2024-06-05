@@ -1,26 +1,20 @@
 <h2 mat-dialog-title>{{getTitle()}}</h2>
 <mat-dialog-content>
-  <form>
-    <mat-form-field class="section-create-input">
+  <form class="section-create">
+    <mat-form-field class="section-create-width">
       <mat-label>Name</mat-label>
       <input matInput #name placeholder="NgLoader">
     </mat-form-field>
-    
-    <br />
 
-    <mat-form-field class="section-create-input">
+    <mat-form-field class="section-create-width">
       <mat-label>Description</mat-label>
       <textarea matInput #description placeholder="What your doing!?"></textarea>
     </mat-form-field>
-    
-    <br />
 
-    <mat-form-field class="section-create-input">
+    <mat-form-field class="section-create-width">
       <mat-label>Content</mat-label>
       <textarea matInput #content placeholder="Thats your final message"></textarea>
     </mat-form-field>
-
-    <br>
 
     <mat-checkbox #defaultEnabled>Default enabled</mat-checkbox>
   </form>
