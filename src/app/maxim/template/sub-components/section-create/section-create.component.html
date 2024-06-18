@@ -20,13 +20,13 @@
   </form>
 </mat-dialog-content>
 <mat-dialog-actions>
-  <button mat-button (click)="updateSection()" color="primary" cdkFocusInitial>
-    {{getFinishButtonName()}}
-  </button>
   @if (showDeleteButton()) {
     <button mat-button (click)="deleteSection()" color="warn" cdkFocusInitial>
       Delete
     </button>
   }
+  <button mat-button (click)="updateSection()" cdkFocusInitial>
+    {{getFinishButtonName()}}
+  </button>
   <button mat-button mat-dialog-close="">Close</button>
 </mat-dialog-actions>

@@ -1,4 +1,4 @@
-<mat-toolbar class="template-toolbar" color="accent">
+<mat-toolbar class="template-toolbar">
   <button mat-icon-button [routerLink]="['/']">
     <mat-icon>arrow_back</mat-icon>
   </button>
@@ -70,7 +70,7 @@
     @if (isEditMode()) {
       <div class="template-editor-section">
         <button mat-raised-button (click)="sectionList.createSection()">Create section</button>
-        <button mat-raised-button color="primary" (click)="generate()">Generate</button>
+        <button mat-raised-button (click)="generate()">Generate</button>
       </div>
     }
   </div>
