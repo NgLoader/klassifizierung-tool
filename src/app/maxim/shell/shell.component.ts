@@ -48,7 +48,7 @@ export class ShellComponent {
   exportAll() {
     const jsonTemplate = this.templateService.exportAllTemplates();
     if (jsonTemplate) {
-      this.downloadService.downloadJson(`export-all.json`, jsonTemplate);
+      this.downloadService.downloadJson('export-all.json', jsonTemplate);
     } else {
       this.snackbar.open('You need to have at least one template!');
     }

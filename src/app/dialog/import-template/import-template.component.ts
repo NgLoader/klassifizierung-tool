@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, ViewChild, inject } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TemplateService } from '../../services/template.service';
 import { DeleteTemplateComponent } from '../delete-template/delete-template.component';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'maxim-import-template',
@@ -46,7 +46,7 @@ export class ImportTemplateComponent {
         if (result.length > 0) {
           this.dialogRef.close();
           for (const template of result) {
-            this.templateService.updateTemplate(template);
+            this.templateService.createTemplate(template);
           }
 
           this.snackbar.open(`Successful inserted ${result.length} templates.`);

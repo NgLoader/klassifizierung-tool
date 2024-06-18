@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
-import { Template, TemplateService } from '../../services/template.service';
+import { TemplateService } from '../../services/template.service';
 
 import { MatCardModule } from '@angular/material/card';
 import { CreateTemplateComponent } from '../../dialog/create-template/create-template.component';
 import { DeleteTemplateComponent } from '../../dialog/delete-template/delete-template.component';
+import { Template } from '../../models/template.model';
 import { DownloadService } from '../../services/download.service';
 
 
@@ -38,7 +39,7 @@ export default class DashboardComponent {
   private readonly dialog = inject(MatDialog);
 
   getTemplates() {
-    return this.templateService.getTemplateList();
+    return this.templateService.templates();
   }
 
   editTemplate(template: Template) {
@@ -51,7 +52,7 @@ export default class DashboardComponent {
 
   exportTemplate(template: Template) {
     const jsonTemplate = this.templateService.exportTemplate(template);
-    this.downloadService.downloadJson(`${template.name}.json`, jsonTemplate);
+    this.downloadService.downloadJson(`${template.name()}.json`, jsonTemplate);
   }
 
   deleteTemplate(template: Template) {

@@ -1,37 +1,19 @@
-import { Injectable } from '@angular/core';
-
-export interface Template {
-  _id?: string;
-
-  name: string;
-  description: string;
-
-  sections: TemplateSection[];
-}
-
-export interface TemplateSection {
-  name: string;
-  description: string;
-  content: string;
-  defaultEnabled: boolean;
-  arguments: SectionArgument[];
-}
-
-export interface SectionArgument {
-  type: string;
-  name: string;
-  key: string;
-  option: string;
-}
+import { EnvironmentInjector, Injectable, computed, inject, runInInjectionContext, signal } from '@angular/core';
+import { Template, TemplateOptions } from './../models/template.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TemplateService {
 
+  private readonly injector = inject(EnvironmentInjector);
+
   private readonly storagePrefix = 'template-';
 
-  private templateList: { [key: string]: Template } = {};
+  private _templates = signal<Template[]>([]);
+  readonly templates = this._templates.asReadonly();
+
+  readonly templateCount = computed(() => this.templates.length);
 
   constructor() {
     this.loadTemplates();
@@ -55,60 +37,60 @@ export class TemplateService {
       if (storageKey?.startsWith(this.storagePrefix)) {
         const value = localStorage.getItem(storageKey);
         if (value) {
-          const templates = this.parseTemplate(value);
-          if (templates && templates.length > 0) {
-            const template = templates[0];
+          const templateOptions = this.parseTemplate(value);
+          if (templateOptions && templateOptions.length > 0) {
+            const options = templateOptions[0];
             const key = storageKey.replace(this.storagePrefix, '');
-
-            if (template._id === key) {
-              this.templateList[key] = template;
-            } else {
-              console.log(`Updating outdatted template id '${key}' to '${template._id}'!`);
-              localStorage.removeItem(storageKey);
-              this.updateTemplate(template);
-            }
+            const template = new Template(this, key, options);
+            this.addTemplate(template);
           }
         }
       }
     }
   }
 
-  getTemplate(key: string) {
-    return this.templateList[key];
+  private addTemplate(template: Template) {
+    this._templates.set([ template, ...this.templates() ]);
   }
 
-  updateTemplate(template: Template) {
-    let key = template._id;
-    if (!key) {
-      key = this.generateRandomId();
-      template._id = key;
+  createTemplate(options: TemplateOptions): Template {
+    const template = this.runInInjectionContext(() => {
+      return new Template(this, this.generateRandomId(), options);
+    });
+    this.saveTemplate(template);
+    this.addTemplate(template);
+    return template;
+  }
+
+  saveTemplate(template: Template) {
+    const key = template.id();
+    const data = template.saveConfig();
+    localStorage.setItem(`${this.storagePrefix}${key}`, JSON.stringify(data));
+  }
+
+  resetTemplate(template: Template) {
+    const storageContent = localStorage.getItem(`${this.storagePrefix}${template.id()}`);
+    if (!storageContent) {
+      // TODO log error because no storage content was found
+      return;
     }
 
-    localStorage.setItem(`${this.storagePrefix}${key}`, JSON.stringify(template));
-    this.templateList[key] = template;
-  }
-
-  removeTemplate(template: Template) {
-    const key = template._id;
-    if (key) {
-      localStorage.removeItem(`${this.storagePrefix}${key}`);
-      delete this.templateList[key];
+    const options = this.parseTemplate(storageContent);
+    if (options && options.length > 0) {
+      template.loadConfig(options[0]);
+    } else {
+      // TODO log error because storage content is invalid
     }
   }
 
   exportTemplate(template: Template) {
-    const clone = Object.assign({}, template);
-    delete clone._id;
-    const exportString = JSON.stringify(clone);
-    return exportString;
+    return JSON.stringify(template.saveConfig());
   }
 
   exportAllTemplates() {
-    const templates: Template[] = [];
-    for (const template of Object.values(this.templateList)) {
-      const templateClone = Object.assign({}, template);
-      delete templateClone._id;
-      templates.push(templateClone);
+    const templates: TemplateOptions[] = [];
+    for (const template of this.templates()) {
+      templates.push(template.saveConfig());
     }
 
     const json = JSON.stringify({
@@ -117,8 +99,8 @@ export class TemplateService {
     return templates.length > 0 ? json : undefined;
   }
 
-  parseTemplate(json: string): Template[] | undefined {
-    const templates: Template[] = [];
+  parseTemplate(json: string): TemplateOptions[] | undefined {
+    const templates: TemplateOptions[] = [];
     try {
       const parse = JSON.parse(json);
 
@@ -130,10 +112,6 @@ export class TemplateService {
         }
       } else if (parse.name && typeof(parse.name) === 'string') {
         if (this.validTemplate(parse)) {
-          if (typeof(parse._id) !== 'string') {
-            parse._id = this.generateRandomId();
-          }
-
           templates.push(parse);
         }
       }
@@ -144,18 +122,30 @@ export class TemplateService {
     return templates;
   }
 
-  validTemplate(template: Template): boolean {
+  validTemplate(template: TemplateOptions): boolean {
     if (template.name && template.description) {
       return true;
     }
     return false;
   }
 
-  getTemplateKeys() {
-    return Object.keys(this.templateList);
+  removeTemplate(template: Template) {
+    const key = template.id();
+    localStorage.removeItem(`${this.storagePrefix}${key}`);
+
+    const templates = this.templates();
+    const index = templates.indexOf(template);
+    if (index !== -1) {
+      templates.splice(index, 1);
+    }
+    this._templates.set(templates);
   }
 
-  getTemplateList() {
-    return Object.values(this.templateList);
+  getTemplate(id: string) {
+    return this.templates().find(template => template.id() === id);
+  }
+
+  runInInjectionContext<T>(fn: () => T): T {
+    return runInInjectionContext(this.injector, fn);
   }
 }

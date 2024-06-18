@@ -1,28 +1,44 @@
 @use '@angular/material' as mat;
+@use './app/maxim/shell/shell.component.theme.scss' as component-shell;
+@use './app/maxim/template/template.component.theme.scss' as component-template;
+@use './app/maxim/dashboard/dashboard.component.theme.scss' as component-dashboard;
+@use './app/dialog/create-template/create-template.component.theme.scss' as component-create-template;
+@use './app/dialog/delete-template/delete-template.component.theme.scss' as component-delete-template;
+@use './app/dialog/import-template/import-template.component.theme.scss' as component-import-template;
+@use './app/models/arguments/argument.theme.scss' as component-argument;
 
 @include mat.core();
 
 // Define a dark theme
-$dark-theme: mat.define-dark-theme((
- color: (
-   primary: mat.define-palette(mat.$pink-palette),
-   accent: mat.define-palette(mat.$blue-grey-palette),
- ),
-  // Only include `typography` and `density` in the default dark theme.
-  typography: mat.define-typography-config(),
-  density: 0,
+$theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$magenta-palette,
+    tertiary: mat.$violet-palette
+  ),
+  typography: (),
+  density: (
+    scale: 0
+  ),
 ));
 
-// Define a light theme
-$light-theme: mat.define-light-theme((
- color: (
-   primary: mat.define-palette(mat.$indigo-palette),
-   accent: mat.define-palette(mat.$pink-palette),
- ),
-));
+html {
+  @include mat.all-component-themes($theme);
+  @include component-shell.theme($theme);
+  @include component-template.theme($theme);
+  @include component-dashboard.theme($theme);
+  @include component-create-template.theme($theme);
+  @include component-delete-template.theme($theme);
+  @include component-import-template.theme($theme);
+  @include component-argument.theme($theme);
+}
 
-// Apply the dark theme by default
-@include mat.all-component-themes($dark-theme);
+html,
+body {
+  height: 100%;
+}
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
