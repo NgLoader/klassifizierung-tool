@@ -1,38 +1,32 @@
 <h2 mat-dialog-title>{{getTitle()}}</h2>
 <mat-dialog-content>
-  <form>
-    <mat-form-field class="create-section-input">
+  <form class="section-create">
+    <mat-form-field class="section-create-width">
       <mat-label>Name</mat-label>
       <input matInput #name placeholder="NgLoader">
     </mat-form-field>
-    
-    <br />
 
-    <mat-form-field class="create-section-input">
+    <mat-form-field class="section-create-width">
       <mat-label>Description</mat-label>
       <textarea matInput #description placeholder="What your doing!?"></textarea>
     </mat-form-field>
-    
-    <br />
 
-    <mat-form-field class="create-section-input">
+    <mat-form-field class="section-create-width">
       <mat-label>Content</mat-label>
       <textarea matInput #content placeholder="Thats your final message"></textarea>
     </mat-form-field>
-
-    <br>
 
     <mat-checkbox #defaultEnabled>Default enabled</mat-checkbox>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions>
-  <button mat-button (click)="updateSection()" color="primary" cdkFocusInitial>
-    {{getFinishButtonName()}}
-  </button>
   @if (showDeleteButton()) {
-    <button mat-button (click)="deleteArgument()" color="warn" cdkFocusInitial>
+    <button mat-button (click)="deleteSection()" color="warn" cdkFocusInitial>
       Delete
     </button>
   }
+  <button mat-button (click)="updateSection()" cdkFocusInitial>
+    {{getFinishButtonName()}}
+  </button>
   <button mat-button mat-dialog-close="">Close</button>
 </mat-dialog-actions>

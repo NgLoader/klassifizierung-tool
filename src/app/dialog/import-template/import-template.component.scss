@@ -1,7 +1,9 @@
 .import-template {
-  width: 60vw;
+  min-width: 150px;
+  max-width: 60vw;
+  width: 100%;
 }
 
-.import-template-spacer {
-  margin: 8px 0;
+.import-template-width {
+  width: 100%;
 }

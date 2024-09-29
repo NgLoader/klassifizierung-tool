@@ -1,0 +1,11 @@
+@use '@angular/material' as mat;
+
+@mixin color($theme) {
+  --app-shell-toolbar-background: #{mat.get-theme-color($theme, surface-container)};
+}
+
+@mixin theme($theme) {
+  @if mat.theme-has($theme, color) {
+    @include color($theme);
+  }
+}

@@ -1,27 +1,27 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
-import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInput, MatInputModule } from '@angular/material/input';
+import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CreateTemplateComponent } from '../../dialog/create-template/create-template.component';
-import { SectionArgument, Template, TemplateSection, TemplateService } from '../../services/template.service';
-import { ArgumentSelectComponent } from './components-sub/argument-select/argument-select.component';
-import { ArgumentStringComponent } from './components-sub/argument-string/argument-string.component';
-import { CreateArgumentComponent } from './components-sub/create-argument/create-argument.component';
-import { CreateSectionComponent } from './components-sub/create-section/create-section.component';
+import { Template } from '../../models/template.model';
+import { TemplateService } from '../../services/template.service';
+import { SectionListComponent } from './sub-components/section-list/section-list.component';
+import { EditmodeService } from '../../services/editmode.service';
 
 @Component({
   selector: 'maxim-template',
   standalone: true,
   imports: [
+    SectionListComponent,
     CommonModule,
     RouterModule,
     MatIconModule,
@@ -31,9 +31,7 @@ import { CreateSectionComponent } from './components-sub/create-section/create-s
     MatExpansionModule,
     MatFormFieldModule,
     MatCheckboxModule,
-    MatTooltipModule,
-    ArgumentStringComponent,
-    ArgumentSelectComponent
+    MatTooltipModule
   ],
   templateUrl: './template.component.html',
   styleUrl: './template.component.scss'
@@ -41,61 +39,70 @@ import { CreateSectionComponent } from './components-sub/create-section/create-s
 export default class TemplateComponent implements OnInit {
 
   private readonly service = inject(TemplateService);
+  private readonly editmodeService = inject(EditmodeService);
 
   private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  private sectionSelected: TemplateSection[] = [];
+  readonly template = signal<Template | undefined>(undefined);
+  readonly sectionCount = computed(() => {
+    const template = this.template();
+    return template ? template.sections().length : 0;
+  });
 
-  private argumentIndex: SectionArgument[] = [];
-  private argumentValues: string[] = [];
+  readonly code = signal('');
+  readonly codeRows = computed(() => this.code().split(/\r?\n/).length);
 
-  template?: Template;
+  readonly dragger = viewChild.required('dragger', { read: ElementRef<HTMLDivElement> });
+  draggerHolding = signal(false);
+  draggerOffset = signal(0);
 
-  @ViewChild(MatAccordion) accordion!: MatAccordion;
+  constructor() {
+    const offset = Number(localStorage.getItem('dragger-section-position'));
+    if (typeof(offset) === 'number') {
+      this.draggerOffset.set(offset);
+    }
 
-  @ViewChild('code', { static: true }) resultCode?: ElementRef<MatInput>;
-  codeRows: number = 1;
-
-  @ViewChild('dragger', { static: true }) dragger?: ElementRef<HTMLDivElement>;
-  draggerHolding: boolean = false;
-  draggerOffset: number = 0;
-
-  loading: boolean = true;
-
-  step: number = 0;
+    effect(() => {
+      const draggerHolding = this.draggerHolding();
+      const offset = untracked(() => this.draggerOffset());
+      if (!draggerHolding && offset !== 0) {
+        localStorage.setItem('dragger-section-position', `${offset}`);
+      }
+    });
+  }
 
   ngOnInit(): void {
-    this.draggerOffset = Number(localStorage.getItem('dragger-section-position'));
-
     const id = this.route.snapshot.paramMap.get('id');
-    this.template = this.service.getTemplate(id ?? '');
-    if (this.template) {
-      this.loading = false;
+    const template = this.service.getTemplate(id ?? '');
+    this.template.set(template);
 
-      for (const section of this.template.sections) {
-        if (section.defaultEnabled) {
-          this.sectionSelected.push(section);
-        }
-      }
-    } else {
+    if (!template) {
       this.router.navigateByUrl('/');
       this.snackbar.open('Were unable the find the selected template id!');
     }
   }
 
-  setStep(index: number) {
-    this.step = index;
+  isEditMode() {
+    return this.editmodeService.editmode();
   }
 
-  nextStep() {
-    this.step++;
+  toggleEditMode() {
+    this.editmodeService.setEditmode(!this.isEditMode());
   }
 
-  prevStep() {
-    this.step--;
+  getName() {
+    return this.template()?.name() ?? 'Loading';
+  }
+
+  editName() {
+    this.dialog.open(CreateTemplateComponent, {
+      data: {
+        template: this.template()
+      }
+    });
   }
 
   stopPropagation(event: Event) {
@@ -104,155 +111,42 @@ export default class TemplateComponent implements OnInit {
 
   draggerMouseUp(event: MouseEvent) {
     event.stopPropagation();
-    this.draggerHolding = false;
-
-    localStorage.setItem('dragger-section-position', `${this.draggerOffset}`);
+    this.draggerHolding.set(false);
   }
 
   draggerMouseDown(event: MouseEvent) {
     event.stopPropagation();
-    this.draggerHolding = true;
+    this.draggerHolding.set(true);
   }
 
   draggerMouseMove(event: MouseEvent) {
-    if (this.dragger && this.draggerHolding) {
+    if (this.dragger() && this.draggerHolding()) {
       event.stopImmediatePropagation();
       event.preventDefault();
-      this.draggerOffset = event.clientX;
+      this.draggerOffset.set(event.clientX);
     }
-  }
-
-  getName() {
-    return this.template?.name;
-  }
-
-  editName() {
-    this.dialog.open(CreateTemplateComponent, {
-      data: {
-        template: this.template
-      }
-    });
-  }
-
-  createSection(section?: TemplateSection) {
-    this.dialog.open(CreateSectionComponent, {
-      data: {
-        template: this.template,
-        section
-      }
-    });
-  }
-
-  editSection(event: Event, section: TemplateSection) {
-    event.stopPropagation();
-    this.createSection(section);
-  }
-
-  toggleSection(event: MatCheckboxChange, section: TemplateSection) {
-    const index = this.sectionSelected.indexOf(section);
-    if (event.checked) {
-      if (index == -1) {
-        this.sectionSelected.push(section);
-      }
-    } else if (index != -1) {
-      this.sectionSelected.splice(index, 1);
-    }
-  }
-
-  moveSection(event: Event, section: TemplateSection, direction: 'up' | 'down') {
-    event.stopPropagation();
-    if (this.template) {
-      const sections = this.template?.sections;
-      const index = sections?.indexOf(section);
-      if (typeof(index) === 'number' && index !== -1) {
-        this.moveArray(sections as object[], index, (direction === 'up' ? (index - 1) : (index + 1)));
-      }
-
-      this.service.updateTemplate(this.template!);
-    }
-  }
-
-  cloneSection(event: Event, section: TemplateSection) {
-    event.stopPropagation();
-    if (this.template) {
-      this.template.sections.push(Object.assign({}, section));
-      
-      this.service.updateTemplate(this.template!);
-    }
-  }
-
-  hasSections() {
-    return this.template!.sections.length > 0;
-  }
-
-  getSections() {
-    return this.template!.sections;
-  }
-
-  isSectionEnabled(section: TemplateSection) {
-    return this.sectionSelected.indexOf(section) !== -1;
-  }
-
-  createArgument(section: TemplateSection, argument?: SectionArgument) {
-    this.dialog.open(CreateArgumentComponent, {
-      data: {
-        template: this.template,
-        section,
-        argument
-      }
-    });
-  }
-
-  argumentValueChanged(argument: SectionArgument, value: string) {
-    let index = this.argumentIndex.indexOf(argument);
-    if (index == -1) {
-      index = this.argumentIndex.length;
-      this.argumentIndex.push(argument);
-    }
-
-    this.argumentValues[index] = value;
   }
 
   generate() {
-    if (!(this.template && this.resultCode)) {
+    const template = this.template();
+    if (!template) {
       return;
     }
 
     let message = '';
-    for (const section of this.template.sections) {
-      if (this.sectionSelected.indexOf(section) == -1) {
+    for (const section of template.sections()) {
+      if (!section.enabled()) {
         continue;
       }
 
-      let content = section.content;
-      for (const argument of section.arguments) {
-        const index = this.argumentIndex.indexOf(argument);
-        let value;
-        if (index !== -1) {
-          value = this.argumentValues[index];
-        } else {
-          value = argument.option;
-        }
-
-        content = content.replaceAll(argument.key, value);
+      let content = section.content();
+      for (const argument of section.arguments()) {
+        content = argument.replaceContent(content);
       }
       message += `\n${content}`;
     }
 
     const code = message.trim();
-    this.resultCode.nativeElement.value = code;
-    this.codeRows = code.split(/\r?\n/).length;
-  }
-
-  moveArray(array: (object | undefined)[], oldIndex: number, newIndex: number) {
-    if (newIndex >= array.length) {
-      let k = newIndex - array.length + 1;
-      while (k--) {
-        array.push(undefined);
-      }
-    }
-
-    array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
-    return array;
+    this.code.set(code);
   }
 }

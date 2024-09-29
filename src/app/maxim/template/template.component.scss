@@ -9,6 +9,8 @@
   top: 0;
   position: sticky;
   z-index: 10;
+
+  background-color: var(--app-template-toolbar-background);
 }
 
 .template-toolbar-spacer {
@@ -16,7 +18,7 @@
 }
 
 .template-toolbar-button {
-  margin-left: 1em;
+  margin: 0 1em;
 }
 
 .template-content {
@@ -24,6 +26,8 @@
 
   display: flex;
   flex-direction: row;
+
+  margin-top: 16px;
 }
 
 .template-result {
@@ -37,7 +41,7 @@
 }
 
 .template-dragger {
-  width: 4px;
+  width: 16px;
 
   cursor: pointer;
 
@@ -53,15 +57,6 @@
   height: 100%;
 }
 
-.template-editor-align .mat-expansion-panel-header-description {
-  justify-content: space-between;
-  align-items: center;
-}
-
-.template-editor-align .mat-mdc-form-field + .mat-mdc-form-field {
-  margin-left: 8px;
-}
-
 .template-editor-section {
   display: flex;
   flex-direction: row;
@@ -71,11 +66,4 @@
   padding: 0.5em 0;
 
   justify-content: center;
-}
-
-.template-editor-argument-list {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 1em;
 }

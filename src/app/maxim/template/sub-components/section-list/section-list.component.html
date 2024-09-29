@@ -1,0 +1,58 @@
+<mat-accordion #sectionList class="section-list-button-align" multi>
+  @for (section of getSections(); track $index) {
+    <mat-expansion-panel class="section-list-panel" [expanded]="true" (opened)="setStep($index)" hideToggle>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{section.name()}}
+        </mat-panel-title>
+        <mat-panel-description>
+          <div>
+            {{section.description()}}
+          </div>
+  
+          @if (isEditMode()) {
+            <div>
+              @if ($index !== sectionCount() - 1) {
+                <button
+                  mat-icon-button
+                  matTooltip="Move down"
+                  (click)="moveSection($event, section, 'down')">
+                  <mat-icon>expand_more</mat-icon>
+                </button>
+              }
+              @if ($index !== 0) {
+                <button
+                  mat-icon-button
+                  matTooltip="Move up"
+                  (click)="moveSection($event, section, 'up')">
+                  <mat-icon>expand_less</mat-icon>
+                </button>
+              }
+              <button
+                mat-icon-button
+                matTooltip="Clone section"
+                (click)="cloneSection($event, section)">
+                <mat-icon>content_copy</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                matTooltip="Edit section"
+                (click)="editSection($event, section)">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+          }
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+  
+      <mat-checkbox
+        (change)="toggleSection(section, $event)"
+        [checked]="section.enabled()">Enabled</mat-checkbox>
+  
+      <br />
+      <br />
+  
+      <maxim-argument-list class="section-list-argument" [template]="template()" [section]="section"></maxim-argument-list>
+    </mat-expansion-panel>
+  }
+</mat-accordion>
